@@ -1,5 +1,5 @@
 import * as React from 'react';
-import AdminLayout from '../../layouts/AdminLayout';
+import AdminLayout from '../../../layouts/AdminLayout';
 import { Row, Col } from 'react-bootstrap';
 import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow } from '@material-ui/core';
 
