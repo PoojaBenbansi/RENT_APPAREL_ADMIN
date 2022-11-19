@@ -1,0 +1,164 @@
+.sidenav {
+  border-right: 1px solid rgba(0, 0, 0, 0.125);
+  margin-top: 60px;
+  height: 100%;
+  width: 80px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #275e5c;
+  overflow-x: hidden;
+  padding-top: 20px;
+}
+
+.sidenav a {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 16px;
+  color: #ffff;
+  display: block;
+}
+
+.sidenav a:hover {
+  color: #f1f1f1;
+  text-decoration: none;
+}
+.sidenav ul {
+  list-style-type: none;
+  padding: 0px;
+  text-align: center;
+}
+
+.sidenav li {
+  padding: 15px 0px;
+  font-size: 25px;
+}
+
+.sidenav li i {
+  font-size: 25px;
+}
+
+.sidenav li i:hover {
+  color: #2b9e9b;
+}
+
+.sidenav li .active {
+  color: #2b9e9b;
+  border-right: 2px solid #2b9e9b;
+}
+
+.main {
+  margin-left: 80px;
+  font-size: 14px;
+  padding: 0px 10px;
+  margin-bottom: 50px;
+}
+
+.navbar-light .navbar-nav .nav-link {
+  color: #ffff;
+  padding: 15px 40px;
+}
+
+.navbar-light .navbar-nav .active > .nav-link,
+.navbar-light .navbar-nav .nav-link.active,
+.navbar-light .navbar-nav .nav-link.show,
+.navbar-light .navbar-nav .show > .nav-link {
+  color: rgba(43, 158, 155);
+  border-bottom: 2px solid rgba(43, 158, 155);;
+}
+
+.navbar-expand .navbar-nav {
+  margin-left: 300px;
+  flex-direction: row;
+}
+.overview-sec {
+  margin-top: 30px;
+  margin-bottom: 5px;
+}
+h3 {
+  font-weight: 400;
+}
+.progress {
+  max-height: 10px;
+}
+.overview-sec p {
+  font-weight: 400;
+}
+.ct-series-a .ct-bar,
+.ct-series-a .ct-line,
+.ct-series-a .ct-point,
+.ct-series-a .ct-slice-donut {
+  stroke: #0077ff;
+}
+
+.ct-series-b .ct-area,
+.ct-series-b .ct-slice-donut-solid,
+.ct-series-b .ct-slice-pie {
+  fill: #b5ceeb;
+}
+
+.ct-series-a .ct-area,
+.ct-series-a .ct-slice-donut-solid,
+.ct-series-a .ct-slice-pie {
+  fill: #0077ff;
+}
+
+.redChart .ct-series-a .ct-area,
+.redChart .ct-series-a .ct-slice-donut-solid,
+.redChart .ct-series-a .ct-slice-pie {
+  fill: #f0166d;
+}
+
+.redChart .ct-series-b .ct-area,
+.redChart .ct-series-b .ct-slice-donut-solid,
+.redChart .ct-series-b .ct-slice-pie {
+  fill: #fabcd4;
+}
+
+.redBar .ct-series-a .ct-bar,
+.redBar .ct-series-a .ct-line,
+.redBar .ct-series-a .ct-point,
+.redBar .ct-series-a .ct-slice-donut {
+  stroke: #f0166d;
+}
+.cart-sec h5 {
+  font-weight: 500;
+  font-size: 15px;
+  padding: 20px 10px;
+}
+.cart-sec .rating {
+  font-weight: 500;
+  font-size: 25px;
+  padding: 0px 10px;
+}
+.table td,
+.table th {
+  border-top: none;
+}
+
+.task-sec {
+  margin-top: 20px;
+}
+.task-sec table tr th {
+  color: #848080;
+  font-size: 12px;
+  font-weight: 400;
+}
+.task-sec .btn {
+  line-height: 1;
+}
+.pagination {
+  display: flex;
+}
+.task-table {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+.error-page {
+  text-align: center;
+  width: 500px;
+  margin: 20px auto;
+  box-shadow: 0px 0px 5px -3px #000;
+  padding: 50px 25px;
+  background: #fff;
+}
