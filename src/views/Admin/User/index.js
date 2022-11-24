@@ -1,9 +1,26 @@
 import React, { useEffect } from 'react';
 import AdminLayout from '../../../layouts/AdminLayout';
 import { Row, Col } from 'react-bootstrap';
-import { getAllUsers, deleteUser } from '../../../api/user';
+import { getAllUsers, deleteUser, updateUserStatus } from '../../../api/user';
 import { modifyUserObject } from '../../../utils/ArrayHelper';
-import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Switch } from '@material-ui/core';
+import Loader from '../../../components/common/Loader';
+import {
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableRow,
+  Switch,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Button,
+} from '@material-ui/core';
 
 const columns = [
   { id: 'name', label: 'Name', minWidth: 170 },
@@ -42,13 +59,21 @@ export const Users = () => {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [userList, setUserList] = React.useState([]);
+  const [activeUser, setActiveUser] = React.useState(null);
+  const [deleteModal, setDeleteModal] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
 
   useEffect(() => {
-    getAllUsers().then((res) => {
-      setUserList(modifyUserObject(res.data));
-    });
+    getAllUsers()
+      .then((res) => {
+        setIsLoading(false);
+        setUserList(modifyUserObject(res.data));
+      })
+      .catch((err) => {
+        console.error(err);
+      });
   }, []);
-  console.log('userList'.userList);
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -59,18 +84,36 @@ export const Users = () => {
   };
 
   const handleStatusChange = (id, status) => {
-    let oldUserList = JSON.parse(JSON.stringify(userList));
-    const userIndex = oldUserList.findIndex((item) => item.id === id);
-    oldUserList[userIndex] = { ...oldUserList[userIndex], isActive: !status };
-    setUserList([...oldUserList]);
+    updateUserStatus(id, !status)
+      .then((res) => {
+        let oldUserList = JSON.parse(JSON.stringify(userList));
+        const userIndex = oldUserList.findIndex((item) => item.id === id);
+        oldUserList[userIndex] = { ...oldUserList[userIndex], isActive: !status };
+        setUserList([...oldUserList]);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
   };
 
   const handleUserDelete = (id) => {
-    deleteUser(id).then(() => {
-      let oldUserList = JSON.parse(JSON.stringify(userList));
-      oldUserList = oldUserList.filter((item) => item.id !== id);
-      setUserList([...oldUserList]);
-    });
+    setDeleteModal(false);
+    setIsLoading(true);
+    deleteUser(id)
+      .then(() => {
+        let oldUserList = JSON.parse(JSON.stringify(userList));
+        oldUserList = oldUserList.filter((item) => item.id !== id);
+        setUserList([...oldUserList]);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  };
+
+  const handleDeleteClick = (user) => {
+    setActiveUser(user);
+    setDeleteModal(true);
   };
 
   return (
@@ -80,9 +123,11 @@ export const Users = () => {
           <h3>All Users</h3>
         </Col>
       </Row>
+
       <Paper sx={{ width: '100%', overflow: 'hidden' }}>
         <TableContainer sx={{ maxHeight: 440 }}>
           <Table stickyHeader aria-label="sticky table">
+            <Loader isLoading={isLoading} />
             <TableHead>
               <TableRow>
                 {columns.map((column) => (
@@ -108,7 +153,7 @@ export const Users = () => {
                       } else if (column.id === 'isDeleted') {
                         return (
                           <TableCell key={column.id} align={column.align}>
-                            <i class="fa fa-trash deleteIcon" aria-hidden="true" onClick={() => handleUserDelete(row.id)}></i>
+                            <i class="fa fa-trash deleteIcon" aria-hidden="true" onClick={() => handleDeleteClick(row)}></i>
                           </TableCell>
                         );
                       } else {
@@ -135,6 +180,20 @@ export const Users = () => {
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
+      <Dialog fullScreen={false} open={deleteModal} onClose={() => setDeleteModal(false)} aria-labelledby="responsive-dialog-title">
+        <DialogTitle id="responsive-dialog-title">{'Delete'}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Are you sure you want to delete this user ?</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button autoFocus onClick={() => setDeleteModal(false)}>
+            Cancel
+          </Button>
+          <Button onClick={() => handleUserDelete(activeUser.id)} autoFocus className="deleteBtn">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </AdminLayout>
   );
 };

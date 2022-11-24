@@ -165,3 +165,7 @@ h3 {
 .deleteIcon{
   color: rgb(236, 38, 38);
 }
+.MuiButtonBase-root.deleteBtn{
+  color: #fff !important;
+  background-color: red !important;
+}
