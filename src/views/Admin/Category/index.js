@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import AdminLayout from '../../../layouts/AdminLayout';
 import { Row, Col } from 'react-bootstrap';
-import { getAllUsers, deleteUser, updateUserStatus } from '../../../api/user';
-import { modifyUserObject } from '../../../utils/ArrayHelper';
+import { getAllCategories, deleteCategory, updateCateroryStatus, addNewCategory } from '../../../api/category';
+import { modifyCategoryObject } from '../../../utils/ArrayHelper';
 import Loader from '../../../components/common/Loader';
 import {
   Paper,
@@ -20,31 +20,17 @@ import {
   DialogContentText,
   DialogTitle,
   Button,
+  TextField,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Box,
 } from '@material-ui/core';
 
 const columns = [
   { id: 'name', label: 'Name', minWidth: 170 },
-  { id: 'email', label: 'Email', minWidth: 100 },
-  {
-    id: 'contact',
-    label: 'contact',
-  },
-  {
-    id: 'address',
-    label: 'Address',
-  },
-  {
-    id: 'city',
-    label: 'City',
-  },
-  {
-    id: 'state',
-    label: 'State',
-  },
-  {
-    id: 'email_verified',
-    label: 'Verified',
-  },
+  { id: 'parentCategory', label: 'Parent Category', minWidth: 100 },
   {
     id: 'isActive',
     label: 'Status',
@@ -55,19 +41,22 @@ const columns = [
   },
 ];
 
-export const Users = () => {
+export const Categories = () => {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
-  const [userList, setUserList] = React.useState([]);
-  const [activeUser, setActiveUser] = React.useState(null);
+  const [dataList, setDataList] = React.useState([]);
+  const [activeItem, setActiveItem] = React.useState(null);
   const [deleteModal, setDeleteModal] = React.useState(false);
+  const [addEditModal, setAddEditModal] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [name, setName] = React.useState('');
+  const [parentCategory, setParentCategory] = React.useState('');
 
   useEffect(() => {
-    getAllUsers()
+    getAllCategories()
       .then((res) => {
         setIsLoading(false);
-        setUserList(modifyUserObject(res.data));
+        setDataList(modifyCategoryObject(res.data));
       })
       .catch((err) => {
         console.error(err);
@@ -84,26 +73,26 @@ export const Users = () => {
   };
 
   const handleStatusChange = (id, status) => {
-    updateUserStatus(id, !status)
+    updateCateroryStatus(id, !status)
       .then((res) => {
-        let oldUserList = JSON.parse(JSON.stringify(userList));
-        const userIndex = oldUserList.findIndex((item) => item.id === id);
-        oldUserList[userIndex] = { ...oldUserList[userIndex], isActive: !status };
-        setUserList([...oldUserList]);
+        let oldList = JSON.parse(JSON.stringify(dataList));
+        const listIndex = oldList.findIndex((item) => item.id === id);
+        oldList[listIndex] = { ...oldList[listIndex], isActive: !status };
+        setDataList([...oldList]);
       })
       .catch((err) => {
         console.error(err);
       });
   };
 
-  const handleUserDelete = (id) => {
+  const handleDelete = (id) => {
     setDeleteModal(false);
     setIsLoading(true);
-    deleteUser(id)
+    deleteCategory(id)
       .then(() => {
-        let oldUserList = JSON.parse(JSON.stringify(userList));
-        oldUserList = oldUserList.filter((item) => item.id !== id);
-        setUserList([...oldUserList]);
+        let oldList = JSON.parse(JSON.stringify(dataList));
+        oldList = oldList.filter((item) => item.id !== id);
+        setDataList([...oldList]);
         setIsLoading(false);
       })
       .catch((err) => {
@@ -112,15 +101,42 @@ export const Users = () => {
   };
 
   const handleDeleteClick = (user) => {
-    setActiveUser(user);
+    setActiveItem(user);
     setDeleteModal(true);
+  };
+
+  const handleEditClick = (item) => {
+    setActiveItem(item);
+    setAddEditModal(true);
+  };
+
+  const handleSaveAddEditCategory = () => {
+    if (name && parentCategory) {
+      const payload = {
+        name,
+        parentCategory,
+      };
+      addNewCategory(payload)
+        .then((res) => {
+          setAddEditModal(false);
+          setActiveItem(null);
+          setName('');
+          setParentCategory('');
+        })
+        .catch((e) => console.error(e));
+    }
   };
 
   return (
     <AdminLayout>
       <Row className="overview-sec">
         <Col sm="6">
-          <h3>All Users</h3>
+          <h3>All Categories</h3>
+        </Col>
+        <Col sm="6">
+          <Button variant="contained" onClick={() => setAddEditModal(true)}>
+            Add new category
+          </Button>
         </Col>
       </Row>
 
@@ -138,8 +154,7 @@ export const Users = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {userList.map((row) => {
-                console.log('row', row);
+              {dataList.map((row) => {
                 return (
                   <TableRow hover role="checkbox" tabIndex={-1} key={row.code}>
                     {columns.map((column) => {
@@ -173,7 +188,7 @@ export const Users = () => {
         <TablePagination
           rowsPerPageOptions={[10, 25, 100]}
           component="div"
-          count={userList.length}
+          count={dataList.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
@@ -183,16 +198,48 @@ export const Users = () => {
       <Dialog fullScreen={false} open={deleteModal} onClose={() => setDeleteModal(false)} aria-labelledby="responsive-dialog-title">
         <DialogTitle id="responsive-dialog-title">{'Delete'}</DialogTitle>
         <DialogContent>
-          <DialogContentText>Are you sure you want to delete this user ?</DialogContentText>
+          <DialogContentText>Are you sure you want to delete this category ?</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button autoFocus onClick={() => setDeleteModal(false)}>
-            Cancel
-          </Button>
-          <Button onClick={() => handleUserDelete(activeUser.id)} autoFocus className="deleteBtn">
+          <Button onClick={() => setDeleteModal(false)}>Cancel</Button>
+          <Button onClick={() => handleDelete(activeItem.id)} autoFocus className="deleteBtn">
             Delete
           </Button>
         </DialogActions>
+      </Dialog>
+
+      <Dialog
+        fullScreen={false}
+        maxWidth={'md'}
+        open={addEditModal}
+        onClose={() => setAddEditModal(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <div style={{ width: '500px' }}>
+          <DialogTitle id="responsive-dialog-title">{'Add new category'}</DialogTitle>
+          <DialogContent>
+            <Box component="form" sx={{ display: 'flex', flexWrap: 'wrap' }}>
+              <FormControl className="mb-3" fullWidth>
+                <TextField id="outlined-basic" label="Outlined" variant="outlined" value={name} onChange={(e) => setName(e.target.value)} />
+              </FormControl>
+              <FormControl fullWidth>
+                <InputLabel id="demo-simple-select-label">Name</InputLabel>
+                <Select labelId="demo-simple-select-label" id="demo-simple-select" value={parentCategory} label="Age" onChange={(e) => setParentCategory(e.target.value)}>
+                  {dataList.map((row) => {
+                    return <MenuItem value={row.id}>{row.name}</MenuItem>;
+                  })}
+                </Select>
+              </FormControl>
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setAddEditModal(false)}>Cancel</Button>
+            <Button onClick={handleSaveAddEditCategory} autoFocus>
+              Submit
+            </Button>
+          </DialogActions>
+        </div>
       </Dialog>
     </AdminLayout>
   );
