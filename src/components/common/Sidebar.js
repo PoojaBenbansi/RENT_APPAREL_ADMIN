@@ -18,8 +18,8 @@ export default class Sidebar extends Component {
             </NavLink>
           </li>
           <li>
-            <NavLink to="/files" activeClassName="active">
-              <i class="fas fa-store"></i>
+            <NavLink to="/categories" activeClassName="active">
+              <i class="fa fa-list-alt"></i>
             </NavLink>
           </li>
           <li>
