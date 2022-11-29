@@ -6,6 +6,8 @@ import PageNotFound from './views/PageNotFound';
 import Users from './views/Admin/User/index';
 import VendorsList from './views/Vendor/VendorList';
 import VendorsView from './views/Vendor/VendorView';
+import { Users } from './views/Admin/User/index';
+import { Categories } from './views/Admin/Category/index';
 
 function App() {
   return (
@@ -14,6 +16,7 @@ function App() {
       <Route exact path="/users" component={Users} />
       <Route exact path="/vendors" component={VendorsList} />
       <Route exact path="/vendors/view/:id" component={VendorsView} />
+      <Route exact path="/categories" component={Categories} />
       <Route component={PageNotFound} />
     </Switch>
   );
