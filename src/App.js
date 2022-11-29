@@ -4,12 +4,16 @@ import { Route, Switch } from 'react-router-dom';
 import Dashboard from './views/Dashboard';
 import PageNotFound from './views/PageNotFound';
 import Users from './views/Admin/User/index';
+import VendorsList from './views/Vendor/VendorList';
+import VendorsView from './views/Vendor/VendorView';
 
 function App() {
   return (
     <Switch>
       <Route exact path="/" component={Dashboard} />
       <Route exact path="/users" component={Users} />
+      <Route exact path="/vendors" component={VendorsList} />
+      <Route exact path="/vendors/view/:id" component={VendorsView} />
       <Route component={PageNotFound} />
     </Switch>
   );
