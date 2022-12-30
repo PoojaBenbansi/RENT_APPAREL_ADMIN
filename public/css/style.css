@@ -1,0 +1,6 @@
+react-time-picker__wrapper{
+    border: transparent !important;
+    display: flex;
+    flex-grow: 1;
+    flex-shrink: 0;
+}

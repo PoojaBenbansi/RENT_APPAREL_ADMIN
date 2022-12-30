@@ -11,56 +11,54 @@ import DialogBox from '../../../components/common/DialogBox';
 import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow } from '@material-ui/core';
 
 const columns = [
-  { id: 'name', label: 'Shop Name', minWidth: 170 },
-  { id: 'state', label: 'State', minWidth: 100 },
+  { id: 'product_name', label: 'Product Name', minWidth: 170 },
+  { id: 'shop_name', label: 'Shop Name', minWidth: 100 },
+  { id: 'brand_name', label: 'Brand Name', minWidth: 100 },
   {
-    id: 'contact',
-    label: 'Contact',
-    minWidth: 170,
+    id: 'product_type',
+    label: 'Type',
+    minWidth: 100,
     align: 'right',
-    // format: (value) => value.toLocaleString('en-US'),
   },
   {
-    id: 'email',
-    label: 'Mail Id',
-    minWidth: 170,
+    id: 'price',
+    label: 'Price',
+    minWidth: 100,
     align: 'right',
-    // format: (value) => value.toLocaleString('en-US'),
+    format: (value) => { return <>&#x20b9; {value} /-</>;}
   },
   {
-    id: 'total',
-    label: 'Total Products',
-    minWidth: 170,
+    id: 'category',
+    label: 'Category',
+    minWidth: 100,
     align: 'right',
-    // format: (value) => value.toLocaleString('en-US'),
   },
   {
-    id: 'isVerified',
-    label: 'Is Verified',
-    minWidth: 170,
+    id: 'sub_category',
+    label: 'Sub Category',
+    minWidth: 100,
     align: 'right',
-    format: (value) =>  { return value ? <Chip label="Verified" color="primary" /> : <Chip label="Not Verified" color="danger" variant="outlined" />},
   },
 ];
 
-function createData(name, state, contact, total, email, isVerified) {
-  return { name, state, contact, total, email, isVerified };
+function createData(product_name, shop_name, brand_name, product_type, price, category, sub_category) {
+  return { product_name, shop_name, brand_name, product_type, price, category, sub_category };
 }
 
 const rows = [
-  createData('Shop 1', 'Mumbai', 924171354, 520, 'shop1@abc.com', true),
-  createData('Shop 2', 'Pune', 803500365, 300, 'shop2@abc.com', false),
-  createData('Shop 3', 'Kanpur', 760483973, 289, 'shop3@abc.com', true),
-  createData('Shop 4', 'Agra', 827167434, 400, 'shop4@abc.com', true),
-  createData('Shop 5', 'Raebareli', 937602103, 390, 'shop5@abc.com', true),
-  createData('Shop 6', 'Mumbai', 95475400, 500, 'shop6@abc.com', false),
-  createData('Shop 7', 'Pune', 83019200, 456, 'shop7@abc.com', true),
-  createData('Shop 8', 'Kanpur', 9857000, 789, 'shop8@abc.com', false),
-  createData('Shop 9', 'Agra', 896577691, 345, 'shop9@abc.com', true),
-  createData('Shop 10', 'Raebareli', 726317000, 564, 'shop10@abc.com', true),
+  createData('Product 1', 'Shop 1', 'Brand 1', 'New', 520, 'Category 1', 'Sub Category 1'),
+  createData('Product 2', 'Shop 2', 'Brand 2', 'Sale', 300, 'Category 2', 'Sub Category 2'),
+  createData('Product 3', 'Shop 3', 'Brand 3', 'Re-Sale', 289, 'Category 3', 'Sub Category 3'),
+  createData('Product 4', 'Shop 4', 'Brand 4', 'Sale', 400, 'Category 4', 'Sub Category 4'),
+  createData('Product 5', 'Shop 5', 'Brand 5', 'New', 390, 'Category 3', 'Sub Category 5'),
+  createData('Product 6', 'Shop 6', 'Brand 6', 'New', 500, 'Category 4', 'Sub Category 6'),
+  createData('Product 7', 'Shop 7', 'Brand 7', 'Sale', 456, 'Category 1', 'Sub Category 7'),
+  createData('Product 8', 'Shop 8', 'Brand 8', 'Re-Sale', 789, 'Category 5', 'Sub Category 8'),
+  createData('Product 9', 'Shop 9', 'Brand 9', 'Sale', 345, 'Category 2', 'Sub Category 9'),
+  createData('Product 10', 'Shop 10', 'Brand 10','Sale', 564, 'Category 1', 'Sub Category 10'),
 ];
 
-export default function VendorsList() {
+export default function ProductList() {
   let history = useHistory();
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -75,7 +73,7 @@ export default function VendorsList() {
     setPage(0);
   };
 
-  const viewShopHandler = () => history.push('/vendors/view/Shop1');
+  const viewShopHandler = () => history.push('/product/edit/Product1');
 
   const viewDeleteModal = () => showDeleteItemDialog(true);
 
@@ -83,14 +81,14 @@ export default function VendorsList() {
     <AdminLayout>
       <Row className="overview-sec">
         <Col sm="6">
-          <h3>All Vendors</h3>
+          <h3>All Products</h3>
         </Col>
       </Row>
       {deleteItemDialog && <DialogBox 
         show={deleteItemDialog} 
         showDeleteItemDialog={showDeleteItemDialog}
-        title={'Delete Vendor'}
-        body={'Are you sure you want to delete this Vendor?'}
+        title={'Delete Product'}
+        body={'Are you sure you want to delete this product?'}
         action={'Delete'}
       />}
       <Paper sx={{ width: '100%', overflow: 'hidden' }}>

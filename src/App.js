@@ -3,11 +3,14 @@ import './App.css';
 import { Route, Switch } from 'react-router-dom';
 import Dashboard from './views/Dashboard';
 import PageNotFound from './views/PageNotFound';
-import Users from './views/Admin/User/index';
 import VendorsList from './views/Vendor/VendorList';
 import VendorsView from './views/Vendor/VendorView';
 import { Users } from './views/Admin/User/index';
 import { Categories } from './views/Admin/Category/index';
+import ProductList from './views/Products/ProductList';
+import ProductEdit from './views/Products/ProductEdit';
+import { Setting } from './views/Settings';
+import { LoginForm } from './views/Login';
 
 function App() {
   return (
@@ -17,6 +20,10 @@ function App() {
       <Route exact path="/vendors" component={VendorsList} />
       <Route exact path="/vendors/view/:id" component={VendorsView} />
       <Route exact path="/categories" component={Categories} />
+      <Route exact path="/products" component={ProductList} />
+      <Route exact path="/product/edit/:id" component={ProductEdit} />
+      <Route exact path="/setting" component={Setting} />
+      <Route exact path="/login" component={LoginForm} />
       <Route component={PageNotFound} />
     </Switch>
   );

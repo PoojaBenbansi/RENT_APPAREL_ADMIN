@@ -23,9 +23,15 @@ export default class Sidebar extends Component {
             </NavLink>
           </li>
           <li>
-            <NavLink to="/contact" activeClassName="active">
+            <NavLink to="/vendors" activeClassName="active">
               {' '}
               <i class="fas fa-store"></i>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/products" activeClassName="active">
+              {' '}
+              <i class="fa fa-list" aria-hidden="true"></i>
             </NavLink>
           </li>
           <li>
