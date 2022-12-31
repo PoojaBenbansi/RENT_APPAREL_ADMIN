@@ -3,7 +3,6 @@ import './App.css';
 import { Route, Switch } from 'react-router-dom';
 import Dashboard from './views/Dashboard';
 import PageNotFound from './views/PageNotFound';
-import Users from './views/Admin/User/index';
 import VendorsList from './views/Vendor/VendorList';
 import VendorsView from './views/Vendor/VendorView';
 import { Users } from './views/Admin/User/index';

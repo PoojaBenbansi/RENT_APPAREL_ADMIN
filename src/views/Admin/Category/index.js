@@ -51,8 +51,16 @@ export const Categories = () => {
   const [isLoading, setIsLoading] = React.useState(true);
   const [name, setName] = React.useState('');
   const [parentCategory, setParentCategory] = React.useState('');
+  const [isEdit, setIsEdit] = React.useState(false);
 
   useEffect(() => {
+    if(activeItem){
+      setName();
+      setParentCategory();
+    }
+  }, [activeItem]);
+
+  const getAllCategoryData = () => {
     getAllCategories()
       .then((res) => {
         setIsLoading(false);
@@ -61,6 +69,10 @@ export const Categories = () => {
       .catch((err) => {
         console.error(err);
       });
+  };
+
+  useEffect(() => {
+    getAllCategoryData();
   }, []);
 
   const handleChangePage = (event, newPage) => {
@@ -108,6 +120,7 @@ export const Categories = () => {
   const handleEditClick = (item) => {
     setActiveItem(item);
     setAddEditModal(true);
+    setIsEdit(true);
   };
 
   const handleSaveAddEditCategory = () => {
@@ -116,15 +129,24 @@ export const Categories = () => {
         name,
         parentCategory,
       };
+      setIsLoading(true);
+      setAddEditModal(false);
       addNewCategory(payload)
         .then((res) => {
-          setAddEditModal(false);
+          getAllCategoryData();
           setActiveItem(null);
           setName('');
           setParentCategory('');
+          setIsLoading(false);
         })
         .catch((e) => console.error(e));
     }
+  };
+
+  const handleModalClose = () => {
+    setAddEditModal(false);
+    setParentCategory('');
+    setName('');
   };
 
   return (
@@ -134,7 +156,13 @@ export const Categories = () => {
           <h3>All Categories</h3>
         </Col>
         <Col sm="6">
-          <Button variant="contained" onClick={() => setAddEditModal(true)}>
+          <Button
+            variant="contained"
+            onClick={() => {
+              setIsEdit(false);
+              setAddEditModal(true);
+            }}
+          >
             Add new category
           </Button>
         </Col>
@@ -146,7 +174,7 @@ export const Categories = () => {
             <Loader isLoading={isLoading} />
             <TableHead>
               <TableRow>
-                {columns.map((column) => (
+                {columns.map((column, index) => (
                   <TableCell key={column.id} align={column.align} style={{ minWidth: column.minWidth }}>
                     {column.label}
                   </TableCell>
@@ -168,7 +196,8 @@ export const Categories = () => {
                       } else if (column.id === 'isDeleted') {
                         return (
                           <TableCell key={column.id} align={column.align}>
-                            <i class="fa fa-trash deleteIcon" aria-hidden="true" onClick={() => handleDeleteClick(row)}></i>
+                            <i className="fa fa-trash deleteIcon" aria-hidden="true" onClick={() => handleDeleteClick(row)}></i>
+                            <i className="fa fa-edit editIcon" aria-hidden="true" onClick={() => handleEditClick(row)}></i>
                           </TableCell>
                         );
                       } else {
@@ -217,24 +246,28 @@ export const Categories = () => {
         aria-describedby="alert-dialog-description"
       >
         <div style={{ width: '500px' }}>
-          <DialogTitle id="responsive-dialog-title">{'Add new category'}</DialogTitle>
+          <DialogTitle id="responsive-dialog-title">{isEdit ? `Edit category` : 'Add new category'}</DialogTitle>
           <DialogContent>
             <Box component="form" sx={{ display: 'flex', flexWrap: 'wrap' }}>
               <FormControl className="mb-3" fullWidth>
-                <TextField id="outlined-basic" label="Outlined" variant="outlined" value={name} onChange={(e) => setName(e.target.value)} />
+                <TextField id="outlined-basic" label="Name" variant="outlined" value={name} onChange={(e) => setName(e.target.value)} />
               </FormControl>
               <FormControl fullWidth>
-                <InputLabel id="demo-simple-select-label">Name</InputLabel>
+                <InputLabel id="demo-simple-select-label">Parent category</InputLabel>
                 <Select labelId="demo-simple-select-label" id="demo-simple-select" value={parentCategory} label="Age" onChange={(e) => setParentCategory(e.target.value)}>
-                  {dataList.map((row) => {
-                    return <MenuItem value={row.id}>{row.name}</MenuItem>;
+                  {dataList.map((row, index) => {
+                    return (
+                      <MenuItem value={row.id} key={index}>
+                        {row.name}
+                      </MenuItem>
+                    );
                   })}
                 </Select>
               </FormControl>
             </Box>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setAddEditModal(false)}>Cancel</Button>
+            <Button onClick={handleModalClose}>Cancel</Button>
             <Button onClick={handleSaveAddEditCategory} autoFocus>
               Submit
             </Button>
