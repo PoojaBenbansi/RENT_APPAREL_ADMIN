@@ -4,7 +4,7 @@ import { NavLink } from 'react-router-dom';
 export default class Sidebar extends Component {
   render() {
     return (
-      <div class="sidenav">
+      <div className="sidenav">
         <ul>
           <li>
             <NavLink exact to="/" activeClassName="active">

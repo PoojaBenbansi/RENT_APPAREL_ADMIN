@@ -49,37 +49,22 @@ const DialogActions = withStyles((theme) => ({
   },
 }))(MuiDialogActions);
 
-export default function DialogBox({show, showDeleteItemDialog, title, body, action}) {
-  const [open, setOpen] = React.useState(show);
-
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-  const handleClose = () => {
-    showDeleteItemDialog(false);
-  };
-
-  
-
+export default function DialogBox({ show, handleClose, handleAction, title, body, action }) {
   return (
     <div>
-      <Dialog onClose={handleClose} aria-labelledby="customized-dialog-title" open={open}>
+      <Dialog onClose={handleClose} aria-labelledby="customized-dialog-title" open={show}>
         <DialogTitle id="customized-dialog-title" onClose={handleClose}>
           <b className="text-danger">{title}</b>
         </DialogTitle>
         <DialogContent dividers>
-          <b>
-           {body}
-          </b>
-          <p className=' mb-3 mt-3'>
-            On delete the data will be lost. If yes then proceed and click on Discard button!
-          </p>
+          <b>{body}</b>
+          <p className=" mb-3 mt-3">On delete the data will be lost. If yes then proceed and click on Discard button!</p>
         </DialogContent>
         <DialogActions>
-          <Button autoFocus onClick={handleClose} color="primary">
+          <Button onClick={handleClose} color="primary">
             Cancel
           </Button>
-          <Button autoFocus onClick={handleClose} color="primary">
+          <Button onClick={handleAction} color="primary">
             {action}
           </Button>
         </DialogActions>

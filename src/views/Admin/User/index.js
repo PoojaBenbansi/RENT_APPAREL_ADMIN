@@ -1,67 +1,81 @@
 import React, { useEffect } from 'react';
 import AdminLayout from '../../../layouts/AdminLayout';
 import { Row, Col } from 'react-bootstrap';
+import Chip from '@material-ui/core/Chip';
+import Tooltip from '@material-ui/core/Tooltip';
+import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
 import { getAllUsers, deleteUser, updateUserStatus } from '../../../api/user';
 import { modifyUserObject } from '../../../utils/ArrayHelper';
 import Loader from '../../../components/common/Loader';
-import {
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TablePagination,
-  TableRow,
-  Switch,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Button,
-} from '@material-ui/core';
-
-const columns = [
-  { id: 'name', label: 'Name', minWidth: 170 },
-  { id: 'email', label: 'Email', minWidth: 100 },
-  {
-    id: 'contact',
-    label: 'contact',
-  },
-  {
-    id: 'address',
-    label: 'Address',
-  },
-  {
-    id: 'city',
-    label: 'City',
-  },
-  {
-    id: 'state',
-    label: 'State',
-  },
-  {
-    id: 'email_verified',
-    label: 'Verified',
-  },
-  {
-    id: 'isActive',
-    label: 'Status',
-  },
-  {
-    id: 'isDeleted',
-    label: 'Action',
-  },
-];
+import { Paper, Switch } from '@material-ui/core';
+import { Table } from 'antd';
+import DialogBox from '../../../components/common/DialogBox';
 
 export const Users = () => {
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [userList, setUserList] = React.useState([]);
   const [activeUser, setActiveUser] = React.useState(null);
   const [deleteModal, setDeleteModal] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
+
+  const columns = [
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+    },
+    {
+      title: 'Email',
+      dataIndex: 'email',
+      key: 'email',
+    },
+    {
+      title: 'Contact',
+      dataIndex: 'contact',
+      key: 'contact',
+    },
+    {
+      title: 'Address',
+      key: 'address',
+      dataIndex: 'address',
+    },
+    {
+      title: 'City',
+      dataIndex: 'city',
+      key: 'city',
+    },
+    {
+      title: 'State',
+      key: 'state',
+      dataIndex: 'state',
+    },
+    {
+      title: 'Is Verified',
+      key: 'email_verified',
+      render: (_, record) => {
+        return record.email_verified ? <Chip label="Verified" color="primary" /> : <Chip label="Not Verified" color="danger" variant="outlined" />;
+      },
+    },
+    {
+      title: 'Status',
+      key: 'id',
+      render: (_, record) => (
+        <>
+          <Switch checked={record.isActive} onChange={() => handleStatusChange(record.id, record.isActive)} inputProps={{ 'aria-label': 'controlled' }} color="primary" />
+        </>
+      ),
+    },
+    {
+      title: 'Action',
+      key: 'id',
+      render: (_, record) => (
+        <>
+          <Tooltip title="Delete">
+            <DeleteForeverIcon color="secondary" onClick={() => handleDeleteClick(record)} />
+          </Tooltip>
+        </>
+      ),
+    },
+  ];
 
   useEffect(() => {
     getAllUsers()
@@ -73,15 +87,6 @@ export const Users = () => {
         console.error(err);
       });
   }, []);
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(+event.target.value);
-    setPage(0);
-  };
 
   const handleStatusChange = (id, status) => {
     updateUserStatus(id, !status)
@@ -96,13 +101,13 @@ export const Users = () => {
       });
   };
 
-  const handleUserDelete = (id) => {
+  const handleUserDelete = () => {
     setDeleteModal(false);
     setIsLoading(true);
-    deleteUser(id)
+    deleteUser(activeUser.id)
       .then(() => {
         let oldUserList = JSON.parse(JSON.stringify(userList));
-        oldUserList = oldUserList.filter((item) => item.id !== id);
+        oldUserList = oldUserList.filter((item) => item.id !== activeUser.id);
         setUserList([...oldUserList]);
         setIsLoading(false);
       })
@@ -123,77 +128,20 @@ export const Users = () => {
           <h3>All Users</h3>
         </Col>
       </Row>
-
       <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-        <TableContainer sx={{ maxHeight: 440 }}>
-          <Table stickyHeader aria-label="sticky table">
-            <Loader isLoading={isLoading} />
-            <TableHead>
-              <TableRow>
-                {columns.map((column) => (
-                  <TableCell key={column.id} align={column.align} style={{ minWidth: column.minWidth }}>
-                    {column.label}
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {userList.map((row) => {
-                console.log('row', row);
-                return (
-                  <TableRow hover role="checkbox" tabIndex={-1} key={row.code}>
-                    {columns.map((column) => {
-                      const value = row[column.id];
-                      if (column.id === 'isActive') {
-                        return (
-                          <TableCell key={column.id} align={column.align}>
-                            <Switch checked={value} onChange={() => handleStatusChange(row.id, value)} inputProps={{ 'aria-label': 'controlled' }} color="primary" />
-                          </TableCell>
-                        );
-                      } else if (column.id === 'isDeleted') {
-                        return (
-                          <TableCell key={column.id} align={column.align}>
-                            <i class="fa fa-trash deleteIcon" aria-hidden="true" onClick={() => handleDeleteClick(row)}></i>
-                          </TableCell>
-                        );
-                      } else {
-                        return (
-                          <TableCell key={column.id} align={column.align}>
-                            {value}
-                          </TableCell>
-                        );
-                      }
-                    })}
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[10, 25, 100]}
-          component="div"
-          count={userList.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
+        <Loader isLoading={isLoading} />
+        <Table columns={columns} dataSource={userList} />
       </Paper>
-      <Dialog fullScreen={false} open={deleteModal} onClose={() => setDeleteModal(false)} aria-labelledby="responsive-dialog-title">
-        <DialogTitle id="responsive-dialog-title">{'Delete'}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>Are you sure you want to delete this user ?</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button autoFocus onClick={() => setDeleteModal(false)}>
-            Cancel
-          </Button>
-          <Button onClick={() => handleUserDelete(activeUser.id)} autoFocus className="deleteBtn">
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {deleteModal && (
+        <DialogBox
+          show={deleteModal}
+          handleClose={() => setDeleteModal(false)}
+          handleAction={handleUserDelete}
+          title={'Delete User'}
+          body={'Are you sure you want to delete this User?'}
+          action={'Delete'}
+        />
+      )}
     </AdminLayout>
   );
 };

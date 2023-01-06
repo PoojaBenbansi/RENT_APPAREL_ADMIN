@@ -2,7 +2,7 @@ export const modifyUserObject = (users) => {
   return users.map((item) => {
     return {
       name: `${item.firstname} ${item.lastname}`,
-      email_verified: item.email_verified === 1 ? 'True' : 'False',
+      email_verified: item.email_verified === 1 ? true : false,
       isActive: item.isActive === 1 ? true : false,
       isDeleted: item.isDeleted,
       id: item._id,
