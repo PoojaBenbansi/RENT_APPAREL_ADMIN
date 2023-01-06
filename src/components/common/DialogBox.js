@@ -58,7 +58,7 @@ export default function DialogBox({ show, handleClose, handleAction, title, body
         </DialogTitle>
         <DialogContent dividers>
           <b>{body}</b>
-          <p className=" mb-3 mt-3">On delete the data will be lost. If yes then proceed and click on Discard button!</p>
+          <p className=" mb-3 mt-3">On delete the data will be lost. If yes then proceed and click on Cancel button!</p>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="primary">

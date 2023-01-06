@@ -21,6 +21,7 @@ export const modifyCategoryObject = (categories) => {
     return {
       name: item.name,
       parentCategory: item.parentCategory?.name ? item.parentCategory?.name : '',
+      parentCategoryId: item.parentCategory?._id ? item.parentCategory?._id : '',
       isActive: item.isActive === 1 ? true : false,
       isDeleted: item.isDeleted,
       id: item._id,

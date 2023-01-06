@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react';
 import AdminLayout from '../../../layouts/AdminLayout';
 import { Row, Col } from 'react-bootstrap';
-import { getAllCategories, deleteCategory, updateCateroryStatus, addNewCategory } from '../../../api/category';
+import { getAllCategories, deleteCategory, updateCateroryStatus, addNewCategory, updateCategory } from '../../../api/category';
 import { modifyCategoryObject } from '../../../utils/ArrayHelper';
 import Loader from '../../../components/common/Loader';
 import Tooltip from '@material-ui/core/Tooltip';
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
+import EditOutlined from '@material-ui/icons/EditTwoTone';
 import DialogBox from '../../../components/common/DialogBox';
 import { Table, Button } from 'antd';
 import { Paper, Switch, Dialog, DialogActions, DialogContent, DialogTitle, TextField, FormControl, InputLabel, MenuItem, Select, Box } from '@material-ui/core';
@@ -48,14 +49,17 @@ export const Categories = () => {
           <Tooltip title="Delete">
             <DeleteForeverIcon color="secondary" onClick={() => handleDeleteClick(record)} />
           </Tooltip>
+          <Tooltip title="Edit" className="ml-2">
+            <EditOutlined color="primary" onClick={() => handleEditClick(record)} />
+          </Tooltip>
         </>
       ),
     },
   ];
   useEffect(() => {
     if (activeItem) {
-      setName();
-      setParentCategory();
+      setName(activeItem.name);
+      setParentCategory(activeItem.parentCategoryId);
     }
   }, [activeItem]);
 
@@ -121,15 +125,27 @@ export const Categories = () => {
       };
       setIsLoading(true);
       setAddEditModal(false);
-      addNewCategory(payload)
-        .then((res) => {
-          getAllCategoryData();
-          setActiveItem(null);
-          setName('');
-          setParentCategory('');
-          setIsLoading(false);
-        })
-        .catch((e) => console.error(e));
+      if (isEdit) {
+        updateCategory(payload, activeItem.id)
+          .then((res) => {
+            getAllCategoryData();
+            setActiveItem(null);
+            setName('');
+            setParentCategory('');
+            setIsLoading(false);
+          })
+          .catch((e) => console.error(e));
+      } else {
+        addNewCategory(payload)
+          .then((res) => {
+            getAllCategoryData();
+            setActiveItem(null);
+            setName('');
+            setParentCategory('');
+            setIsLoading(false);
+          })
+          .catch((e) => console.error(e));
+      }
     }
   };
 
@@ -137,6 +153,8 @@ export const Categories = () => {
     setAddEditModal(false);
     setParentCategory('');
     setName('');
+    setActiveItem(null);
+    setIsEdit(false);
   };
 
   return (
@@ -170,19 +188,12 @@ export const Categories = () => {
           handleClose={() => setDeleteModal(false)}
           handleAction={handleDelete}
           title={'Delete User'}
-          body={'Are you sure you want to delete this User?'}
+          body={'Are you sure you want to delete this Category?'}
           action={'Delete'}
         />
       )}
 
-      <Dialog
-        fullScreen={false}
-        maxWidth={'md'}
-        open={addEditModal}
-        onClose={() => setAddEditModal(false)}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
+      <Dialog fullScreen={false} maxWidth={'md'} open={addEditModal} onClose={handleModalClose} aria-labelledby="alert-dialog-title" aria-describedby="alert-dialog-description">
         <div style={{ width: '500px' }}>
           <DialogTitle id="responsive-dialog-title">{isEdit ? `Edit category` : 'Add new category'}</DialogTitle>
           <DialogContent>

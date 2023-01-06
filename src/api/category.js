@@ -16,3 +16,6 @@ export const deleteCategory = (id) => {
 export const addNewCategory = (data) => {
   return axios.post(`${BASE_URL}/category`, data).then((response) => response.data);
 };
+export const updateCategory = (data, id) => {
+  return axios.put(`${BASE_URL}/category/${id}`, data).then((response) => response.data);
+};
