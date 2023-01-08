@@ -4,46 +4,13 @@ import { Row, Col } from 'react-bootstrap';
 import { getAllCategories, deleteCategory, updateCateroryStatus, addNewCategory } from '../../../api/category';
 import { modifyCategoryObject } from '../../../utils/ArrayHelper';
 import Loader from '../../../components/common/Loader';
-import {
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TablePagination,
-  TableRow,
-  Switch,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Button,
-  TextField,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  Box,
-} from '@material-ui/core';
-
-const columns = [
-  { id: 'name', label: 'Name', minWidth: 170 },
-  { id: 'parentCategory', label: 'Parent Category', minWidth: 100 },
-  {
-    id: 'isActive',
-    label: 'Status',
-  },
-  {
-    id: 'isDeleted',
-    label: 'Action',
-  },
-];
+import Tooltip from '@material-ui/core/Tooltip';
+import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
+import DialogBox from '../../../components/common/DialogBox';
+import { Table, Button } from 'antd';
+import { Paper, Switch, Dialog, DialogActions, DialogContent, DialogTitle, TextField, FormControl, InputLabel, MenuItem, Select, Box } from '@material-ui/core';
 
 export const Categories = () => {
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [dataList, setDataList] = React.useState([]);
   const [activeItem, setActiveItem] = React.useState(null);
   const [deleteModal, setDeleteModal] = React.useState(false);
@@ -51,8 +18,48 @@ export const Categories = () => {
   const [isLoading, setIsLoading] = React.useState(true);
   const [name, setName] = React.useState('');
   const [parentCategory, setParentCategory] = React.useState('');
+  const [isEdit, setIsEdit] = React.useState(false);
 
+  const columns = [
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+    },
+    {
+      title: 'Parent Category',
+      dataIndex: 'parentCategory',
+      key: 'parentCategory',
+    },
+    {
+      title: 'Status',
+      key: 'isActive',
+      render: (_, record) => (
+        <>
+          <Switch checked={record.isActive} onChange={() => handleStatusChange(record.id, record.isActive)} inputProps={{ 'aria-label': 'controlled' }} color="primary" />
+        </>
+      ),
+    },
+    {
+      title: 'Action',
+      key: 'isDeleted',
+      render: (_, record) => (
+        <>
+          <Tooltip title="Delete">
+            <DeleteForeverIcon color="secondary" onClick={() => handleDeleteClick(record)} />
+          </Tooltip>
+        </>
+      ),
+    },
+  ];
   useEffect(() => {
+    if (activeItem) {
+      setName();
+      setParentCategory();
+    }
+  }, [activeItem]);
+
+  const getAllCategoryData = () => {
     getAllCategories()
       .then((res) => {
         setIsLoading(false);
@@ -61,16 +68,11 @@ export const Categories = () => {
       .catch((err) => {
         console.error(err);
       });
+  };
+
+  useEffect(() => {
+    getAllCategoryData();
   }, []);
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(+event.target.value);
-    setPage(0);
-  };
 
   const handleStatusChange = (id, status) => {
     updateCateroryStatus(id, !status)
@@ -85,13 +87,13 @@ export const Categories = () => {
       });
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = () => {
     setDeleteModal(false);
     setIsLoading(true);
-    deleteCategory(id)
+    deleteCategory(activeItem.id)
       .then(() => {
         let oldList = JSON.parse(JSON.stringify(dataList));
-        oldList = oldList.filter((item) => item.id !== id);
+        oldList = oldList.filter((item) => item.id !== activeItem.id);
         setDataList([...oldList]);
         setIsLoading(false);
       })
@@ -108,6 +110,7 @@ export const Categories = () => {
   const handleEditClick = (item) => {
     setActiveItem(item);
     setAddEditModal(true);
+    setIsEdit(true);
   };
 
   const handleSaveAddEditCategory = () => {
@@ -116,97 +119,61 @@ export const Categories = () => {
         name,
         parentCategory,
       };
+      setIsLoading(true);
+      setAddEditModal(false);
       addNewCategory(payload)
         .then((res) => {
-          setAddEditModal(false);
+          getAllCategoryData();
           setActiveItem(null);
           setName('');
           setParentCategory('');
+          setIsLoading(false);
         })
         .catch((e) => console.error(e));
     }
   };
 
+  const handleModalClose = () => {
+    setAddEditModal(false);
+    setParentCategory('');
+    setName('');
+  };
+
   return (
     <AdminLayout>
       <Row className="overview-sec">
-        <Col sm="6">
+        <Col sm="10">
           <h3>All Categories</h3>
         </Col>
-        <Col sm="6">
-          <Button variant="contained" onClick={() => setAddEditModal(true)}>
+        <Col sm="2">
+          <Button
+            type="primary"
+            shape="round"
+            size="large"
+            onClick={() => {
+              setIsEdit(false);
+              setAddEditModal(true);
+            }}
+          >
             Add new category
           </Button>
         </Col>
       </Row>
 
       <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-        <TableContainer sx={{ maxHeight: 440 }}>
-          <Table stickyHeader aria-label="sticky table">
-            <Loader isLoading={isLoading} />
-            <TableHead>
-              <TableRow>
-                {columns.map((column) => (
-                  <TableCell key={column.id} align={column.align} style={{ minWidth: column.minWidth }}>
-                    {column.label}
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {dataList.map((row) => {
-                return (
-                  <TableRow hover role="checkbox" tabIndex={-1} key={row.code}>
-                    {columns.map((column) => {
-                      const value = row[column.id];
-                      if (column.id === 'isActive') {
-                        return (
-                          <TableCell key={column.id} align={column.align}>
-                            <Switch checked={value} onChange={() => handleStatusChange(row.id, value)} inputProps={{ 'aria-label': 'controlled' }} color="primary" />
-                          </TableCell>
-                        );
-                      } else if (column.id === 'isDeleted') {
-                        return (
-                          <TableCell key={column.id} align={column.align}>
-                            <i class="fa fa-trash deleteIcon" aria-hidden="true" onClick={() => handleDeleteClick(row)}></i>
-                          </TableCell>
-                        );
-                      } else {
-                        return (
-                          <TableCell key={column.id} align={column.align}>
-                            {value}
-                          </TableCell>
-                        );
-                      }
-                    })}
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[10, 25, 100]}
-          component="div"
-          count={dataList.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
+        <Loader isLoading={isLoading} />
+        <Table columns={columns} dataSource={dataList} />
       </Paper>
-      <Dialog fullScreen={false} open={deleteModal} onClose={() => setDeleteModal(false)} aria-labelledby="responsive-dialog-title">
-        <DialogTitle id="responsive-dialog-title">{'Delete'}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>Are you sure you want to delete this category ?</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteModal(false)}>Cancel</Button>
-          <Button onClick={() => handleDelete(activeItem.id)} autoFocus className="deleteBtn">
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {deleteModal && (
+        <DialogBox
+          show={deleteModal}
+          handleClose={() => setDeleteModal(false)}
+          handleAction={handleDelete}
+          title={'Delete User'}
+          body={'Are you sure you want to delete this User?'}
+          action={'Delete'}
+        />
+      )}
 
       <Dialog
         fullScreen={false}
@@ -217,25 +184,31 @@ export const Categories = () => {
         aria-describedby="alert-dialog-description"
       >
         <div style={{ width: '500px' }}>
-          <DialogTitle id="responsive-dialog-title">{'Add new category'}</DialogTitle>
+          <DialogTitle id="responsive-dialog-title">{isEdit ? `Edit category` : 'Add new category'}</DialogTitle>
           <DialogContent>
             <Box component="form" sx={{ display: 'flex', flexWrap: 'wrap' }}>
               <FormControl className="mb-3" fullWidth>
-                <TextField id="outlined-basic" label="Outlined" variant="outlined" value={name} onChange={(e) => setName(e.target.value)} />
+                <TextField id="outlined-basic" label="Name" variant="outlined" value={name} onChange={(e) => setName(e.target.value)} />
               </FormControl>
               <FormControl fullWidth>
-                <InputLabel id="demo-simple-select-label">Name</InputLabel>
+                <InputLabel id="demo-simple-select-label">Parent category</InputLabel>
                 <Select labelId="demo-simple-select-label" id="demo-simple-select" value={parentCategory} label="Age" onChange={(e) => setParentCategory(e.target.value)}>
-                  {dataList.map((row) => {
-                    return <MenuItem value={row.id}>{row.name}</MenuItem>;
+                  {dataList.map((row, index) => {
+                    return (
+                      <MenuItem value={row.id} key={index}>
+                        {row.name}
+                      </MenuItem>
+                    );
                   })}
                 </Select>
               </FormControl>
             </Box>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setAddEditModal(false)}>Cancel</Button>
-            <Button onClick={handleSaveAddEditCategory} autoFocus>
+            <Button onClick={handleModalClose} shape="round" size="default">
+              Cancel
+            </Button>
+            <Button onClick={handleSaveAddEditCategory} type="primary" shape="round" size="default">
               Submit
             </Button>
           </DialogActions>
