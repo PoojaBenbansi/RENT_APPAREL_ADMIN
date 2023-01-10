@@ -1,18 +1,20 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import AdminLayout from '../../../layouts/AdminLayout';
 import { makeStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
-import { useHistory, useParams } from 'react-router-dom';
-import { Paper, TextField } from '@material-ui/core';
+import { Paper, TextField, Grid } from '@material-ui/core';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import { SimpleInput } from '../../../components/common/SimpleInput';
-import LocationOnIcon from '@material-ui/icons/LocationOn';
 import PhoneIcon from '@material-ui/icons/Phone';
 import DescriptionIcon from '@material-ui/icons/Description';
 import DomainIcon from '@material-ui/icons/Domain';
 import FileUpload from '../../../components/common/Dropzone/Dropzone';
 import { TimePicker } from 'antd';
 import dayjs from 'dayjs';
+import * as CommonRequest from '../../../api/commonRequest';
+import SimpleReactValidator from 'simple-react-validator';
+import { Button } from 'antd';
+import { createNewVendor } from '../../../api/vendor';
+import Loader from '../../../components/common/Loader';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -33,35 +35,82 @@ const daysOptions = [
 ];
 
 const intialFormAttributes = {
-  shop_name: 'Shop 1',
-  shop_address: '14555 Grisby Rd, Houston, Texas, United States 77079',
-  shop_contact: '281-752-6990',
-  email: 'harshitpratapsingh@gmail.com',
-  shop_description:
-    "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged",
-  is_approved: true,
-  open_time: '10:00',
-  close_time: '20:00',
-  open_days: [],
-  zipCode: 436353,
+  name: '',
+  address: '',
+  contact: '',
+  email: '',
+  description: '',
+  openTime: '08:00',
+  closeTime: '20:00',
+  openDays: [],
+  zipCode: '',
+  city: '',
+  state: '',
 };
 
 export default function VendorsView() {
-  let history = useHistory();
-  const { id } = useParams();
   const classes = useStyles();
   const [formAttributes, setFormAttributes] = useState(intialFormAttributes);
-  const [initFormAttributes, setInitFormAttributes] = useState(intialFormAttributes);
-  const [selectedDaysOption, setSelectedDaysOption] = useState(daysOptions);
+  const [allCity, setCities] = useState([]);
+  const [allState, setStates] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [newUserInfo, setNewUserInfo] = useState({
     profileImages: [],
   });
+  const simpleValidator = useRef(new SimpleReactValidator());
+  const [, forceUpdate] = useState();
   const format = 'HH:mm';
   const updateUploadedFiles = (files) => setNewUserInfo({ ...newUserInfo, profileImages: files });
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    //logic to create new user...
+  const fetchStates = () => {
+    CommonRequest.getStates()
+      .then((response) => setStates(response?.data))
+      .catch((error) => console.log(error));
+  };
+
+  const fetchCities = (state_id) => {
+    CommonRequest.getCities(state_id)
+      .then((response) => setCities(response?.data))
+      .catch((error) => console.log(error));
+  };
+
+  useEffect(() => {
+    fetchStates();
+  }, []);
+
+  const handleSave = () => {
+    const formValid = simpleValidator.current.allValid();
+    if (!formValid) {
+      console.log('form not valid...');
+      simpleValidator.current.showMessages();
+      forceUpdate(1);
+    } else {
+      setIsLoading(true);
+      const payload = {
+        name: formAttributes.name,
+        email: formAttributes.email,
+        phone: formAttributes.contact,
+        password: '12345',
+        description: formAttributes.description,
+        address: formAttributes.address,
+        openDays: formAttributes.openDays.map((item) => item.value),
+        openTime: formAttributes.openTime,
+        closeTime: formAttributes.closeTime,
+        zipCode: formAttributes.zipCode,
+        state: formAttributes.state._id,
+        city: formAttributes.city._id,
+      };
+
+      createNewVendor(payload)
+        .then((res) => {
+          setIsLoading(false);
+          console.log('res', res);
+        })
+        .catch((err) => {
+          setIsLoading(false);
+          console.log('err', err);
+        });
+    }
   };
 
   const handleChange = (evt) => {
@@ -71,166 +120,172 @@ export default function VendorsView() {
     }));
   };
 
-  const resetHandler = (target) => {
+  const handleDropdownChange = (value, key) => {
     setFormAttributes((prev) => ({
       ...prev,
-      [target]: initFormAttributes[target],
+      [key]: value,
     }));
+    if (key === 'state') {
+      fetchCities(value._id);
+    }
   };
-
-  const saveHandler = (target) => {
-    setInitFormAttributes((prev) => ({
-      ...prev,
-      [target]: formAttributes[target],
-    }));
-  };
-
-  const top100Films = [
-    { label: 'The Shawshank Redemption', year: 1994 },
-    { label: 'The Godfather', year: 1972 },
-    { label: 'The Godfather: Part II', year: 1974 },
-    { label: 'The Dark Knight', year: 2008 },
-    { label: '12 Angry Men', year: 1957 },
-    { label: "Schindler's List", year: 1993 },
-    { label: 'Pulp Fiction', year: 1994 },
-  ];
 
   return (
     <AdminLayout>
       <h3 className="mt-2 mb-2">Vendor Details</h3>
       <Paper className={classes.paper}>
+        <Loader isLoading={isLoading} />
         <Grid container spacing={20} className="form-container">
           <Grid container>
             <Grid item xs={6} className="form-input">
               <SimpleInput
-                name={'shop_name'}
+                name={'name'}
                 type={'text'}
-                value={formAttributes?.shop_name}
+                value={formAttributes?.name}
                 handleChange={handleChange}
-                saveHandler={saveHandler}
-                resetHandler={resetHandler}
                 placeholder={'Shop Name'}
                 label={'Shop Name'}
                 startIcon={<DomainIcon className="mr-3" />}
               />
+              {simpleValidator.current.message('name', formAttributes?.name, 'required')}
             </Grid>
             <Grid item xs={6} className="form-input">
               <SimpleInput
-                name={'shop_contact'}
+                name={'email'}
                 type={'email'}
                 value={formAttributes?.email}
                 handleChange={handleChange}
-                saveHandler={saveHandler}
-                resetHandler={resetHandler}
                 placeholder={'Email'}
                 label={'Email'}
                 startIcon={<PhoneIcon className="mr-3" />}
               />
+              {simpleValidator.current.message('email', formAttributes?.email, 'required|email')}
             </Grid>
           </Grid>
           <Grid container>
             <Grid item xs={6} className="form-input">
               <SimpleInput
-                name={'shop_contact'}
-                type={'text'}
-                value={formAttributes?.shop_contact}
+                name={'contact'}
+                type={'number'}
+                value={formAttributes?.contact}
                 handleChange={handleChange}
-                saveHandler={saveHandler}
-                resetHandler={resetHandler}
                 placeholder={'Contact Number'}
                 label={'Contact Number'}
                 startIcon={<PhoneIcon className="mr-3" />}
               />
+              {simpleValidator.current.message('contact', formAttributes?.contact, 'required|phone')}
             </Grid>
             <Grid item xs={6} className="form-input">
               <SimpleInput
-                name={'shop_name'}
+                name={'address'}
                 type={'text'}
                 value={formAttributes?.shop_name}
                 handleChange={handleChange}
-                saveHandler={saveHandler}
-                resetHandler={resetHandler}
-                placeholder={'Address'}
-                label={'Address'}
+                placeholder={'Street'}
+                label={'Street'}
                 startIcon={<DomainIcon className="mr-3" />}
               />
+              {simpleValidator.current.message('street', formAttributes?.address, 'required')}
             </Grid>
           </Grid>
           <Grid container>
             <Grid item xs={4} className="form-input">
               <SimpleInput
-                name={'zip_code'}
+                name={'zipCode'}
                 type={'text'}
                 value={formAttributes?.zipCode}
                 handleChange={handleChange}
-                saveHandler={saveHandler}
-                resetHandler={resetHandler}
                 placeholder={'Zip code'}
                 label={'Zip code'}
                 startIcon={<DomainIcon className="mr-3" />}
               />
+              {simpleValidator.current.message('zipCode', formAttributes?.zipCode, 'required|integer')}
             </Grid>
             <Grid item xs={4} className="form-input">
               <Autocomplete
                 autoHighlight
+                name="state"
                 id="combo-box-demo"
-                options={top100Films}
-                getOptionLabel={(option) => option.label}
+                options={allState}
+                onChange={(e, value) => handleDropdownChange(value, 'state')}
+                getOptionLabel={(option) => option.name}
                 sx={{ width: 300 }}
-                renderInput={(params) => <TextField {...params} label="City" variant="outlined" />}
-              />
-            </Grid>
-            <Grid item xs={4} className="form-input">
-              <Autocomplete
-                autoHighlight
-                id="combo-box-demo"
-                options={top100Films}
-                getOptionLabel={(option) => option.label}
-                sx={{ width: 300 }}
+                value={formAttributes.state}
                 renderInput={(params) => <TextField {...params} label="State" variant="outlined" />}
               />
+              {simpleValidator.current.message('state', formAttributes?.state, 'required')}
+            </Grid>
+            <Grid item xs={4} className="form-input">
+              <Autocomplete
+                autoHighlight
+                name="city"
+                id="combo-box-demo"
+                options={allCity}
+                onChange={(e, value) => handleDropdownChange(value, 'city')}
+                getOptionLabel={(option) => option.name}
+                sx={{ width: 300 }}
+                value={formAttributes.city}
+                renderInput={(params) => <TextField {...params} label="City" variant="outlined" />}
+              />
+              {simpleValidator.current.message('city', formAttributes?.city, 'required')}
             </Grid>
           </Grid>
           <Grid container>
             <Grid item xs={3} className="form-input time-picker">
-              <TimePicker placeholder="Opening Time" format={format} />
+              <TimePicker
+                placeholder="Opening Time"
+                format={format}
+                value={dayjs(formAttributes.openTime, format)}
+                onChange={(e, value) => handleDropdownChange(value, 'openTime')}
+              />
+              {simpleValidator.current.message('opening', formAttributes?.openTime, 'required')}
             </Grid>
             <Grid item xs={3} className="form-input time-picker">
-              <TimePicker placeholder="Closing Time" format={format} />
+              <TimePicker
+                placeholder="Closing Time"
+                format={format}
+                value={dayjs(formAttributes.closeTime, format)}
+                onChange={(e, value) => handleDropdownChange(value, 'closeTime')}
+              />
+              {simpleValidator.current.message('closing', formAttributes?.closeTime, 'required')}
             </Grid>
             <Grid item xs={6} className="form-input">
               <Autocomplete
                 multiple
                 limitTags={2}
                 id="multiple-limit-tags"
-                options={top100Films}
+                value={formAttributes?.openDays}
+                options={daysOptions}
+                name="openDays"
+                onChange={(e, value) => handleDropdownChange(value, 'openDays')}
                 getOptionLabel={(option) => option.label}
-                defaultValue={[top100Films[2]]}
                 renderInput={(params) => <TextField {...params} label="Open Days" variant="outlined" />}
                 sx={{ width: '500px' }}
               />
+              {simpleValidator.current.message('openDays', formAttributes?.openDays, 'required')}
             </Grid>
           </Grid>
           <Grid container>
             <Grid item xs={12} className="form-input">
               <SimpleInput
-                name={'shop_description'}
+                name={'description'}
                 type={'text'}
                 rows={3}
-                value={formAttributes?.shop_description}
+                value={formAttributes?.description}
                 handleChange={handleChange}
-                saveHandler={saveHandler}
-                resetHandler={resetHandler}
                 placeholder={'Shop Description'}
                 label={'Shop Description'}
                 startIcon={<DescriptionIcon className="mr-3" />}
               />
+              {simpleValidator.current.message('description', formAttributes?.description, 'required')}
             </Grid>
           </Grid>
-
           <Grid item xs={12} className="form-input">
             <FileUpload accept=".jpg,.png,.jpeg" label="Shop Image(s)" multiple updateFilesCb={updateUploadedFiles} />
           </Grid>
+          <Button type="primary" shape="round" size="large" className="save-btn" onClick={handleSave}>
+            Submit
+          </Button>
         </Grid>
       </Paper>
     </AdminLayout>

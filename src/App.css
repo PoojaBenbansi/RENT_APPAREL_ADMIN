@@ -184,3 +184,6 @@ h3 {
 .ant-picker-input input{
   font-size: 20px;
 }
+.save-btn{
+  align-self: center;
+}

@@ -12,6 +12,7 @@ import { Table } from 'antd';
 import { Paper } from '@material-ui/core';
 import { getAllVendor } from '../../../api/vendor';
 import Loader from '../../../components/common/Loader';
+import { modifyVendorObject } from '../../../utils/ArrayHelper';
 
 export default function VendorsList() {
   let history = useHistory();
@@ -26,14 +27,24 @@ export default function VendorsList() {
       key: 'name',
     },
     {
-      title: 'Contact',
-      dataIndex: 'contact',
-      key: 'contact',
-    },
-    {
       title: 'Mail Id',
       dataIndex: 'email',
       key: 'email',
+    },
+    {
+      title: 'Contact',
+      dataIndex: 'phone',
+      key: 'phone',
+    },
+    {
+      title: 'City',
+      dataIndex: 'city',
+      key: 'city',
+    },
+    {
+      title: 'State',
+      dataIndex: 'state',
+      key: 'state',
     },
     {
       title: 'Total Products',
@@ -70,38 +81,12 @@ export default function VendorsList() {
     getAllVendor()
       .then((res) => {
         setIsLoading(false);
-        setVendorList(res.data);
+        setVendorList(modifyVendorObject(res.data));
       })
       .catch((err) => {
         console.error(err);
       });
   }, []);
-
-  function createData(name, state, contact, total, email, isVerified) {
-    return { name, state, contact, total, email, isVerified };
-  }
-
-  const data = [
-    createData('Shop 1', 'Mumbai', 924171354, 520, 'shop1@abc.com', true),
-    createData('Shop 2', 'Pune', 803500365, 300, 'shop2@abc.com', false),
-    createData('Shop 3', 'Kanpur', 760483973, 289, 'shop3@abc.com', true),
-    createData('Shop 4', 'Agra', 827167434, 400, 'shop4@abc.com', true),
-    createData('Shop 5', 'Raebareli', 937602103, 390, 'shop5@abc.com', true),
-    createData('Shop 6', 'Mumbai', 95475400, 500, 'shop6@abc.com', false),
-    createData('Shop 7', 'Pune', 83019200, 456, 'shop7@abc.com', true),
-    createData('Shop 8', 'Kanpur', 9857000, 789, 'shop8@abc.com', false),
-    createData('Shop 9', 'Agra', 896577691, 345, 'shop9@abc.com', true),
-    createData('Shop 1', 'Mumbai', 924171354, 520, 'shop1@abc.com', true),
-    createData('Shop 2', 'Pune', 803500365, 300, 'shop2@abc.com', false),
-    createData('Shop 3', 'Kanpur', 760483973, 289, 'shop3@abc.com', true),
-    createData('Shop 4', 'Agra', 827167434, 400, 'shop4@abc.com', true),
-    createData('Shop 5', 'Raebareli', 937602103, 390, 'shop5@abc.com', true),
-    createData('Shop 6', 'Mumbai', 95475400, 500, 'shop6@abc.com', false),
-    createData('Shop 7', 'Pune', 83019200, 456, 'shop7@abc.com', true),
-    createData('Shop 8', 'Kanpur', 9857000, 789, 'shop8@abc.com', false),
-    createData('Shop 9', 'Agra', 896577691, 345, 'shop9@abc.com', true),
-    createData('Shop 10', 'Raebareli', 726317000, 564, 'shop10@abc.com', true),
-  ];
 
   const viewShopHandler = () => history.push('/vendors/view/Shop1');
 
@@ -125,7 +110,7 @@ export default function VendorsList() {
       )}
       <Paper sx={{ width: '100%', overflow: 'hidden' }}>
         <Loader isLoading={isLoading} />
-        <Table columns={columns} dataSource={data} />
+        <Table columns={columns} dataSource={vendorList} />
       </Paper>
     </AdminLayout>
   );
