@@ -9,8 +9,8 @@ import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
 import Tooltip from '@material-ui/core/Tooltip';
 import DialogBox from '../../../components/common/DialogBox';
 import { Table } from 'antd';
-import { Paper } from '@material-ui/core';
-import { getAllVendor } from '../../../api/vendor';
+import { Paper, Switch } from '@material-ui/core';
+import { getAllVendor, updateVendorStatus, deleteVendor } from '../../../api/vendor';
 import Loader from '../../../components/common/Loader';
 import { modifyVendorObject } from '../../../utils/ArrayHelper';
 
@@ -19,6 +19,20 @@ export default function VendorsList() {
   const [deleteItemDialog, showDeleteItemDialog] = React.useState(false);
   const [vendorList, setVendorList] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [activeVendor, setActiveVendor] = React.useState(null);
+
+  const handleStatusChange = (id, status) => {
+    updateVendorStatus(id, !status)
+      .then((res) => {
+        let oldVendorList = JSON.parse(JSON.stringify(vendorList));
+        const userIndex = oldVendorList.findIndex((item) => item.id === id);
+        oldVendorList[userIndex] = { ...oldVendorList[userIndex], isActive: !status };
+        setVendorList([...oldVendorList]);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  };
 
   const columns = [
     {
@@ -50,6 +64,18 @@ export default function VendorsList() {
       title: 'Total Products',
       key: 'total',
       dataIndex: 'total',
+      render: (_, record) => {
+        return <p>345</p>;
+      },
+    },
+    {
+      title: 'Status',
+      key: 'id',
+      render: (_, record) => (
+        <>
+          <Switch checked={record.isActive} onChange={() => handleStatusChange(record.id, record.isActive)} inputProps={{ 'aria-label': 'controlled' }} color="primary" />
+        </>
+      ),
     },
     {
       title: 'Is Verified',
@@ -70,7 +96,7 @@ export default function VendorsList() {
             <EmailIcon color="primary" />
           </Tooltip>
           <Tooltip title="Delete">
-            <DeleteForeverIcon color="secondary" onClick={viewDeleteModal} />
+            <DeleteForeverIcon color="secondary" onClick={() => viewDeleteModal(record)} />
           </Tooltip>
         </>
       ),
@@ -90,7 +116,25 @@ export default function VendorsList() {
 
   const viewShopHandler = () => history.push('/vendors/view/Shop1');
 
-  const viewDeleteModal = () => showDeleteItemDialog(true);
+  const viewDeleteModal = (data) => {
+    setActiveVendor(data);
+    showDeleteItemDialog(true);
+  };
+
+  const handleDeleteAction = () => {
+    showDeleteItemDialog(false);
+    setIsLoading(true);
+    deleteVendor(activeVendor.id)
+      .then(() => {
+        let oldVendorList = JSON.parse(JSON.stringify(vendorList));
+        oldVendorList = oldVendorList.filter((item) => item.id !== activeVendor.id);
+        setVendorList([...oldVendorList]);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  };
 
   return (
     <AdminLayout>
@@ -102,9 +146,10 @@ export default function VendorsList() {
       {deleteItemDialog && (
         <DialogBox
           show={deleteItemDialog}
-          showDeleteItemDialog={showDeleteItemDialog}
+          handleClose={() => showDeleteItemDialog(false)}
+          handleAction={handleDeleteAction}
           title={'Delete Vendor'}
-          body={'Are you sure you want to delete this Vendor?'}
+          body={'Are you sure you want to delete this Vendor ?'}
           action={'Delete'}
         />
       )}

@@ -11,6 +11,7 @@ import FileUpload from '../../../components/common/Dropzone/Dropzone';
 import { TimePicker } from 'antd';
 import dayjs from 'dayjs';
 import * as CommonRequest from '../../../api/commonRequest';
+import { getVendorDetails } from '../../../api/vendor';
 import SimpleReactValidator from 'simple-react-validator';
 import { Button } from 'antd';
 import { createNewVendor } from '../../../api/vendor';
@@ -76,6 +77,9 @@ export default function VendorsView() {
 
   useEffect(() => {
     fetchStates();
+    getVendorDetails('63bcf5a486b80e0d44fc8887')
+      .then((response) => console.log(response))
+      .catch((error) => console.log(error));
   }, []);
 
   const handleSave = () => {
