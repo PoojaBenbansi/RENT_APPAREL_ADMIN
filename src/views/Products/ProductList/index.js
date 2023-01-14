@@ -80,8 +80,11 @@ export default function ProductList() {
   return (
     <AdminLayout>
       <Row className="overview-sec">
-        <Col sm="6">
+        <Col sm="10">
           <h3>All Products</h3>
+        </Col>
+        <Col sm="2">
+          <button className='btn btn-primary float-right' onClick={() => history.push('/product/add/new')}>Add Product</button>
         </Col>
       </Row>
       {deleteItemDialog && <DialogBox 

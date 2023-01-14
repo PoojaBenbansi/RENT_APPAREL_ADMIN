@@ -8,7 +8,7 @@ import VendorsView from './views/Vendor/VendorView';
 import { Users } from './views/Admin/User/index';
 import { Categories } from './views/Admin/Category/index';
 import ProductList from './views/Products/ProductList';
-import ProductEdit from './views/Products/ProductEdit';
+import ProductEdit from './views/Products/ProductAddEdit';
 import { Setting } from './views/Settings';
 import { LoginForm } from './views/Login';
 
@@ -21,7 +21,7 @@ function App() {
       <Route exact path="/vendors/view/:id" component={VendorsView} />
       <Route exact path="/categories" component={Categories} />
       <Route exact path="/products" component={ProductList} />
-      <Route exact path="/product/edit/:id" component={ProductEdit} />
+      <Route exact path="/product/:mode/:id" component={ProductEdit} />
       <Route exact path="/setting" component={Setting} />
       <Route exact path="/login" component={LoginForm} />
       <Route component={PageNotFound} />
