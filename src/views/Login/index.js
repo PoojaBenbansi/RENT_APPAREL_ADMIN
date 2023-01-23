@@ -1,6 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
-import Form from 'react-bootstrap/Form';
+import { Paper, TextField, Grid } from '@material-ui/core';
+import { SimpleInput } from '../../components/common/SimpleInput';
+import PhoneIcon from '@material-ui/icons/Phone';
+import DescriptionIcon from '@material-ui/icons/Description';
+import DomainIcon from '@material-ui/icons/Domain';
+import Autocomplete from '@material-ui/lab/Autocomplete';
+import { Button } from 'antd';
+import SimpleReactValidator from 'simple-react-validator';
+import * as CommonRequest from '../../api/commonRequest';
+import { createNewVendor } from '../../api/vendor';
 
 const intialFormAttributes = {
   email: '',
@@ -9,6 +18,11 @@ const intialFormAttributes = {
 
 export const LoginForm = () => {
   const [formAttributes, setFormAttributes] = useState(intialFormAttributes);
+  const simpleValidator = useRef(new SimpleReactValidator());
+  const [allCity, setCities] = useState([]);
+  const [allState, setStates] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [, forceUpdate] = useState();
   let history = useHistory();
 
   const handleChange = (evt) => {
@@ -22,33 +36,89 @@ export const LoginForm = () => {
     history.push('/');
   };
 
+  const handleSave = () => {
+    const formValid = simpleValidator.current.allValid();
+    if (!formValid) {
+      console.log('form not valid...');
+      simpleValidator.current.showMessages();
+      forceUpdate(1);
+    } else {
+      setIsLoading(true);
+      const payload = {
+        name: formAttributes.name,
+        email: formAttributes.email,
+        phone: formAttributes.contact,
+        password: '12345',
+        description: formAttributes.description,
+        address: formAttributes.address,
+        openDays: formAttributes.openDays.map((item) => item.value),
+        openTime: formAttributes.openTime,
+        closeTime: formAttributes.closeTime,
+        zipCode: formAttributes.zipCode,
+        state: formAttributes.state._id,
+        city: formAttributes.city._id,
+      };
+
+      createNewVendor(payload)
+        .then((res) => {
+          setIsLoading(false);
+          console.log('res', res);
+        })
+        .catch((err) => {
+          setIsLoading(false);
+          console.log('err', err);
+        });
+    }
+  };
+
   return (
-    <div className="container">
-      <div className="container-fluid">
-        <div className="card shadow-sm border-0 px-3 rounded-2 mb-3 py-4 mx-auto mt-5 bg-light">
-          <div className="card-header bg-transparent border-0 text-center text-uppercase">
-            <h3>User Login</h3>
+    <div className="registration-form">
+      <div className="login-form-sec">
+        <Paper>
+          <div className="login-form">
+            <div className="card-header bg-transparent border-0 text-center text-uppercase">
+              <h3 className="form-head">Login</h3>
+            </div>
+            <div className="card-body">
+              <Grid container spacing={20} className="form-container">
+                <Grid container>
+                  <Grid item xs={12} className="form-input">
+                    <SimpleInput
+                      name={'email'}
+                      type={'email'}
+                      value={formAttributes?.email}
+                      handleChange={handleChange}
+                      placeholder={'Email'}
+                      label={'Email'}
+                      startIcon={<PhoneIcon className="mr-3" />}
+                    />
+                    {simpleValidator.current.message('email', formAttributes?.email, 'required|email')}
+                  </Grid>
+                </Grid>
+                <Grid container>
+                  <Grid item xs={12} className="form-input">
+                    <SimpleInput
+                      name={'password'}
+                      type={'text'}
+                      value={formAttributes?.password}
+                      handleChange={handleChange}
+                      placeholder={'Password'}
+                      label={'Password'}
+                      startIcon={<DomainIcon className="mr-3" />}
+                    />
+                    {simpleValidator.current.message('name', formAttributes?.password, 'required')}
+                  </Grid>
+                </Grid>
+
+                <Grid container className="submit-btn-div">
+                  <Button type="primary" shape="round" size="large" className="save-btn" onClick={handleSave}>
+                    Submit
+                  </Button>
+                </Grid>
+              </Grid>
+            </div>
           </div>
-          <div className="card-body">
-            <Form>
-              <div className="form-group">
-                <label className="mb-0">
-                  Email<span className="text-danger">*</span>
-                </label>
-                <input name="email" type="email" className="form-control" placeholder="Email" value={formAttributes?.email} onChange={handleChange} />
-              </div>
-              <div className="form-group">
-                <label className="mb-0">
-                  Password<span className="text-danger">*</span>
-                </label>
-                <input name="password" type="password" className="form-control" placeholder="Password" value={formAttributes?.password} onChange={handleChange} />
-              </div>
-              <p className="text-center mb-0">
-                <input type="submit" className="btn btn-primary btn-lg w-100 text-uppercase" value="Login" onClick={handleSubmit} />
-              </p>
-            </Form>
-          </div>
-        </div>
+        </Paper>
       </div>
     </div>
   );

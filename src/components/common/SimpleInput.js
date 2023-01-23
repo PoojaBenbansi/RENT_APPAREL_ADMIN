@@ -14,7 +14,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export const SimpleInput = (props) => {
-  const { value, name, type, handleChange, fullWidth, placeholder, startIcon, label, readOnly = true } = props;
+  const { value, name, type, handleChange, fullWidth, placeholder, startIcon, label, rows, readOnly = true } = props;
   const classes = useStyles();
 
   return (
@@ -32,6 +32,7 @@ export const SimpleInput = (props) => {
         multiline={true}
         label={label}
         placeholder={placeholder}
+        rows={rows}
       />
     </FormControl>
   );
