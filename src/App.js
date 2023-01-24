@@ -11,6 +11,7 @@ import ProductList from './views/Products/ProductList';
 import ProductEdit from './views/Products/ProductAddEdit';
 import { Setting } from './views/Settings';
 import { LoginForm } from './views/Login';
+import BrandList from './views/Brands/BrandList';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
       <Route exact path="/product/:mode/:id" component={ProductEdit} />
       <Route exact path="/setting" component={Setting} />
       <Route exact path="/login" component={LoginForm} />
+      <Route exact path="/brands" component={BrandList} />
       <Route component={PageNotFound} />
     </Switch>
   );
