@@ -10,6 +10,8 @@ import { Button } from 'antd';
 import SimpleReactValidator from 'simple-react-validator';
 import * as CommonRequest from '../../api/commonRequest';
 import { createNewVendor } from '../../api/vendor';
+import useAllStates from '../../utils/hooks/useAllStates';
+import useAllCities from '../../utils/hooks/useAllCities';
 
 const intialFormAttributes = {
   name: '',
@@ -17,13 +19,12 @@ const intialFormAttributes = {
   phone: '',
   description: '',
   password: '',
+  state: '',
 };
 
 export const RegstrationFrom = () => {
   const [formAttributes, setFormAttributes] = useState(intialFormAttributes);
   const simpleValidator = useRef(new SimpleReactValidator());
-  const [allCity, setCities] = useState([]);
-  const [allState, setStates] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [, forceUpdate] = useState();
   let history = useHistory();
@@ -35,21 +36,8 @@ export const RegstrationFrom = () => {
     }));
   };
 
-  const fetchStates = () => {
-    CommonRequest.getStates()
-      .then((response) => setStates(response?.data))
-      .catch((error) => console.log(error));
-  };
-
-  const fetchCities = (state_id) => {
-    CommonRequest.getCities(state_id)
-      .then((response) => setCities(response?.data))
-      .catch((error) => console.log(error));
-  };
-
-  useEffect(() => {
-    fetchStates();
-  }, []);
+  const allState = useAllStates();
+  const allCities = useAllCities(formAttributes?.state?._id);
 
   const handleSubmit = () => {
     history.push('/');
@@ -60,9 +48,6 @@ export const RegstrationFrom = () => {
       ...prev,
       [key]: value,
     }));
-    if (key === 'state') {
-      fetchCities(value._id);
-    }
   };
 
   const handleSave = () => {
@@ -219,7 +204,7 @@ export const RegstrationFrom = () => {
                     autoHighlight
                     name="city"
                     id="combo-box-demo"
-                    options={allCity}
+                    options={allCities}
                     onChange={(e, value) => handleDropdownChange(value, 'city')}
                     getOptionLabel={(option) => option.name}
                     sx={{ width: 300 }}

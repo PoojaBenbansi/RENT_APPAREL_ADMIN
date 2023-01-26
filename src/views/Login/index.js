@@ -3,12 +3,9 @@ import { useHistory } from 'react-router-dom';
 import { Paper, TextField, Grid } from '@material-ui/core';
 import { SimpleInput } from '../../components/common/SimpleInput';
 import PhoneIcon from '@material-ui/icons/Phone';
-import DescriptionIcon from '@material-ui/icons/Description';
 import DomainIcon from '@material-ui/icons/Domain';
-import Autocomplete from '@material-ui/lab/Autocomplete';
 import { Button } from 'antd';
 import SimpleReactValidator from 'simple-react-validator';
-import * as CommonRequest from '../../api/commonRequest';
 import { createNewVendor } from '../../api/vendor';
 
 const intialFormAttributes = {
@@ -19,8 +16,6 @@ const intialFormAttributes = {
 export const LoginForm = () => {
   const [formAttributes, setFormAttributes] = useState(intialFormAttributes);
   const simpleValidator = useRef(new SimpleReactValidator());
-  const [allCity, setCities] = useState([]);
-  const [allState, setStates] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [, forceUpdate] = useState();
   let history = useHistory();
