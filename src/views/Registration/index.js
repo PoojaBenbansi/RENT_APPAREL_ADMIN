@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
 import { Paper, TextField, Grid } from '@material-ui/core';
 import { SimpleInput } from '../../components/common/SimpleInput';
@@ -8,10 +8,10 @@ import DomainIcon from '@material-ui/icons/Domain';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import { Button } from 'antd';
 import SimpleReactValidator from 'simple-react-validator';
-import * as CommonRequest from '../../api/commonRequest';
 import { createNewVendor } from '../../api/vendor';
 import useAllStates from '../../utils/hooks/useAllStates';
 import useAllCities from '../../utils/hooks/useAllCities';
+import Loader from '../../components/common/Loader';
 
 const intialFormAttributes = {
   name: '',
@@ -20,6 +20,8 @@ const intialFormAttributes = {
   description: '',
   password: '',
   state: '',
+  city: '',
+  zipCode: '',
 };
 
 export const RegstrationFrom = () => {
@@ -39,10 +41,6 @@ export const RegstrationFrom = () => {
   const allState = useAllStates();
   const allCities = useAllCities(formAttributes?.state?._id);
 
-  const handleSubmit = () => {
-    history.push('/');
-  };
-
   const handleDropdownChange = (value, key) => {
     setFormAttributes((prev) => ({
       ...prev,
@@ -53,7 +51,6 @@ export const RegstrationFrom = () => {
   const handleSave = () => {
     const formValid = simpleValidator.current.allValid();
     if (!formValid) {
-      console.log('form not valid...');
       simpleValidator.current.showMessages();
       forceUpdate(1);
     } else {
@@ -62,21 +59,18 @@ export const RegstrationFrom = () => {
         name: formAttributes.name,
         email: formAttributes.email,
         phone: formAttributes.contact,
-        password: '12345',
+        password: formAttributes.password,
         description: formAttributes.description,
         address: formAttributes.address,
-        openDays: formAttributes.openDays.map((item) => item.value),
-        openTime: formAttributes.openTime,
-        closeTime: formAttributes.closeTime,
         zipCode: formAttributes.zipCode,
         state: formAttributes.state._id,
         city: formAttributes.city._id,
       };
 
       createNewVendor(payload)
-        .then((res) => {
+        .then(() => {
           setIsLoading(false);
-          console.log('res', res);
+          history.push('/');
         })
         .catch((err) => {
           setIsLoading(false);
@@ -89,6 +83,7 @@ export const RegstrationFrom = () => {
     <div className="registration-form">
       <div className="registration-form-sec">
         <Paper className="">
+          <Loader isLoading={isLoading} />
           <div className="card-header bg-transparent border-0 text-center text-uppercase">
             <h3 className="form-head">Registration</h3>
           </div>

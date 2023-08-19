@@ -1,12 +1,13 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
-import { Paper, TextField, Grid } from '@material-ui/core';
+import { Paper, Grid } from '@material-ui/core';
 import { SimpleInput } from '../../components/common/SimpleInput';
 import PhoneIcon from '@material-ui/icons/Phone';
 import DomainIcon from '@material-ui/icons/Domain';
 import { Button } from 'antd';
 import SimpleReactValidator from 'simple-react-validator';
-import { createNewVendor } from '../../api/vendor';
+import { vendorLogin } from '../../api/vendor';
+import Loader from '../../components/common/Loader';
 
 const intialFormAttributes = {
   email: '',
@@ -27,34 +28,18 @@ export const LoginForm = () => {
     }));
   };
 
-  const handleSubmit = () => {
-    history.push('/');
-  };
-
   const handleSave = () => {
     const formValid = simpleValidator.current.allValid();
     if (!formValid) {
-      console.log('form not valid...');
       simpleValidator.current.showMessages();
       forceUpdate(1);
     } else {
       setIsLoading(true);
       const payload = {
-        name: formAttributes.name,
         email: formAttributes.email,
-        phone: formAttributes.contact,
-        password: '12345',
-        description: formAttributes.description,
-        address: formAttributes.address,
-        openDays: formAttributes.openDays.map((item) => item.value),
-        openTime: formAttributes.openTime,
-        closeTime: formAttributes.closeTime,
-        zipCode: formAttributes.zipCode,
-        state: formAttributes.state._id,
-        city: formAttributes.city._id,
+        password: formAttributes.password,
       };
-
-      createNewVendor(payload)
+      vendorLogin(payload)
         .then((res) => {
           setIsLoading(false);
           console.log('res', res);
@@ -70,6 +55,7 @@ export const LoginForm = () => {
     <div className="registration-form">
       <div className="login-form-sec">
         <Paper>
+          <Loader isLoading={isLoading} />
           <div className="login-form">
             <div className="card-header bg-transparent border-0 text-center text-uppercase">
               <h3 className="form-head">Login</h3>
